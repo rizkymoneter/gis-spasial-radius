@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GISSpatialChecker")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c68f66a12d4c62b0fbd72f375eb4b62c39cef022")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+44eb5f1f9fc503b34c6c1522f2fc0d77d6527cb4")]
 [assembly: System.Reflection.AssemblyProductAttribute("GISSpatialChecker")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GISSpatialChecker")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

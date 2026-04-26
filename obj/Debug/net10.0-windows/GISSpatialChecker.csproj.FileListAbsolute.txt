@@ -72,3 +72,4 @@ D:\00. CODE PROJECT\GISSpatialChecker\obj\Debug\net10.0-windows\GISSpatialChecke
 D:\00. CODE PROJECT\GISSpatialChecker\obj\Debug\net10.0-windows\ref\GISSpatialChecker.dll
 D:\00. CODE PROJECT\GISSpatialChecker\obj\Debug\net10.0-windows\GeneratedInternalTypeHelper.g.cs
 D:\00. CODE PROJECT\GISSpatialChecker\obj\Debug\net10.0-windows\GISSpatialChecker_MarkupCompile.lref
+D:\00. CODE PROJECT\GISSpatialChecker\obj\Debug\net10.0-windows\GISSpatialChecker.sourcelink.json
