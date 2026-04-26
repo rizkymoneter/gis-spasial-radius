@@ -1,0 +1,341 @@
+<Window x:Class="GISSpatialChecker.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mapsui="clr-namespace:Mapsui.UI.Wpf;assembly=Mapsui.UI.Wpf"
+        Title="🗺️ GIS Spatial Checker" Height="750" Width="1200"
+        WindowStartupLocation="CenterScreen"
+        Background="#1E1E2E">
+
+    <Window.Resources>
+        <!-- Button Style -->
+        <Style x:Key="BtnPrimary" TargetType="Button">
+            <Setter Property="Background" Value="#4C8BF5"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#6AA3FF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#2E6FD4"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#555"/>
+                                <Setter Property="Foreground" Value="#999"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="BtnSuccess" TargetType="Button" BasedOn="{StaticResource BtnPrimary}">
+            <Setter Property="Background" Value="#27AE60"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#2ECC71"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="BtnDanger" TargetType="Button" BasedOn="{StaticResource BtnPrimary}">
+            <Setter Property="Background" Value="#E74C3C"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FF6B6B"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="BtnWarning" TargetType="Button" BasedOn="{StaticResource BtnPrimary}">
+            <Setter Property="Background" Value="#E67E22"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#F39C12"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Label Style -->
+        <Style x:Key="LabelHeader" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#A0AEC0"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+
+        <Style x:Key="CardPanel" TargetType="Border">
+            <Setter Property="Background" Value="#2D2D44"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+
+        <!-- DataGrid Style -->
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="#2D2D44"/>
+            <Setter Property="Foreground" Value="#E2E8F0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="RowBackground" Value="#2D2D44"/>
+            <Setter Property="AlternatingRowBackground" Value="#353550"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#444"/>
+            <Setter Property="ColumnHeaderHeight" Value="36"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="56"/>   <!-- Header -->
+            <RowDefinition Height="*"/>    <!-- Content -->
+            <RowDefinition Height="32"/>   <!-- Status Bar -->
+        </Grid.RowDefinitions>
+
+        <!-- ═══ HEADER ══════════════════════════════════════════════ -->
+        <Border Grid.Row="0" Background="#16213E">
+            <Grid>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0">
+                    <TextBlock Text="🗺️" FontSize="24" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBlock Text="GIS Spatial Checker" FontSize="20" FontWeight="Bold"
+                               Foreground="White" VerticalAlignment="Center"/>
+                    <TextBlock Text="v1.0" FontSize="11" Foreground="#4C8BF5"
+                               VerticalAlignment="Bottom" Margin="8,0,0,3"/>
+                </StackPanel>
+
+                <!-- Loading Indicator -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                            VerticalAlignment="Center" Margin="20,0"
+                            Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="⏳ Memproses..." Foreground="#F39C12" FontSize="13"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ═══ MAIN CONTENT ═════════════════════════════════════════ -->
+        <Grid Grid.Row="1" Margin="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="280"/>  <!-- Panel Kiri -->
+                <ColumnDefinition Width="*"/>    <!-- Map + Tabel -->
+            </Grid.ColumnDefinitions>
+
+            <!-- ─── PANEL KIRI ─────────────────────────────────── -->
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Margin="0,0,12,0">
+                <StackPanel>
+
+                    <!-- Radius Setting -->
+                    <Border Style="{StaticResource CardPanel}">
+                        <StackPanel>
+                            <TextBlock Text="⚙️ PENGATURAN RADIUS" Style="{StaticResource LabelHeader}"/>
+                            <TextBlock Text="Jarak Radius (meter):" Foreground="#CBD5E0" FontSize="12" Margin="0,8,0,4"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="60"/>
+                                </Grid.ColumnDefinitions>
+                                <Slider Grid.Column="0" Minimum="1" Maximum="10000"
+                                        Value="{Binding RadiusMeter, Mode=TwoWay}"
+                                        TickFrequency="50" IsSnapToTickEnabled="False"
+                                        VerticalAlignment="Center"/>
+                                <TextBox Grid.Column="1" Text="{Binding RadiusMeter, Mode=TwoWay, StringFormat={}{0:F0}}"
+                                         Background="#1E1E2E" Foreground="White"
+                                         BorderBrush="#4C8BF5" BorderThickness="1"
+                                         Padding="4,2" Margin="8,0,0,0"
+                                         TextAlignment="Center"/>
+                            </Grid>
+                            <TextBlock Foreground="#4C8BF5" FontSize="12" Margin="0,6,0,0"
+                                       Text="{Binding RadiusMeter, StringFormat='Radius aktif: {0:F0} meter'}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Import Data -->
+                    <Border Style="{StaticResource CardPanel}">
+                        <StackPanel>
+                            <TextBlock Text="📂 IMPORT DATA" Style="{StaticResource LabelHeader}"/>
+
+                            <TextBlock Text="Entity A (Titik Referensi):" Foreground="#CBD5E0" FontSize="12" Margin="0,8,0,4"/>
+                            <Button Content="📥 Import Entity A (CSV/Excel)"
+                                    Command="{Binding ImportEntityACommand}"
+                                    Style="{StaticResource BtnPrimary}" HorizontalAlignment="Stretch"/>
+                            <TextBlock Text="{Binding JumlahA}" Foreground="#4C8BF5"
+                                       FontSize="11" Margin="4,2,0,0"/>
+
+                            <TextBlock Text="Entity B (Titik Target):" Foreground="#CBD5E0" FontSize="12" Margin="0,12,0,4"/>
+                            <Button Content="📥 Import Entity B (CSV/Excel)"
+                                    Command="{Binding ImportEntityBCommand}"
+                                    Style="{StaticResource BtnWarning}" HorizontalAlignment="Stretch"/>
+                            <TextBlock Text="{Binding JumlahB}" Foreground="#E67E22"
+                                       FontSize="11" Margin="4,2,0,0"/>
+
+                            <Separator Background="#444" Margin="0,12"/>
+                            <Button Content="📋 Download Template CSV"
+                                    Command="{Binding DownloadTemplateCommand}"
+                                    Style="{StaticResource BtnPrimary}"
+                                    Background="#555" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Aksi -->
+                    <Border Style="{StaticResource CardPanel}">
+                        <StackPanel>
+                            <TextBlock Text="🔍 CEK SPASIAL" Style="{StaticResource LabelHeader}"/>
+                            <Button Content="🚀 Jalankan Cek Spasial"
+                                    Command="{Binding CekSpasialCommand}"
+                                    Style="{StaticResource BtnSuccess}"
+                                    HorizontalAlignment="Stretch"
+                                    FontSize="14" Padding="12,12"
+                                    Visibility="{Binding IsProcessing, Converter={StaticResource InverseBoolToVisibility}}"/>
+                            <Button Content="⛔ Batalkan Proses"
+                                    Command="{Binding BatalkanProsesCommand}"
+                                    Style="{StaticResource BtnDanger}"
+                                    HorizontalAlignment="Stretch"
+                                    FontSize="14" Padding="12,12"
+                                    Visibility="{Binding IsProcessing, Converter={StaticResource BoolToVisibility}}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Progress Bar -->
+                    <Border Style="{StaticResource CardPanel}"
+                            Visibility="{Binding IsProcessing, Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel>
+                            <TextBlock Text="⏳ PROGRESS" Style="{StaticResource LabelHeader}"/>
+                            <ProgressBar Value="{Binding ProgressValue}" Maximum="100"
+                                         Height="20" Margin="0,8,0,4"
+                                         Foreground="#27AE60" Background="#1A3D2E"/>
+                            <TextBlock Text="{Binding ProgressText}" Foreground="#2ECC71"
+                                       FontSize="12" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding EtaText}" Foreground="#A0AEC0"
+                                       FontSize="11" Margin="0,4,0,0"/>
+                            <TextBlock Text="{Binding RateText}" Foreground="#4C8BF5"
+                                       FontSize="11" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Statistik -->
+                    <Border Style="{StaticResource CardPanel}">
+                        <StackPanel>
+                            <TextBlock Text="📊 STATISTIK HASIL" Style="{StaticResource LabelHeader}"/>
+                            <Grid Margin="0,8,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0" Background="#1A3D2E" CornerRadius="8" Padding="12" Margin="0,0,4,0">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="✅ DALAM" Foreground="#27AE60" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding JumlahDalam}" Foreground="#2ECC71"
+                                                   FontSize="28" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="1" Background="#3D1A1A" CornerRadius="8" Padding="12" Margin="4,0,0,0">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="❌ LUAR" Foreground="#E74C3C" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding JumlahLuar}" Foreground="#FF6B6B"
+                                                   FontSize="28" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Export -->
+                    <Border Style="{StaticResource CardPanel}">
+                        <StackPanel>
+                            <TextBlock Text="💾 EXPORT HASIL" Style="{StaticResource LabelHeader}"/>
+                            <Button Content="📊 Export ke Excel (.xlsx)"
+                                    Command="{Binding ExportExcelCommand}"
+                                    Style="{StaticResource BtnSuccess}" HorizontalAlignment="Stretch"/>
+                            <Button Content="📄 Export ke CSV (.csv)"
+                                    Command="{Binding ExportCsvCommand}"
+                                    Style="{StaticResource BtnPrimary}" HorizontalAlignment="Stretch"/>
+                            <Separator Background="#444" Margin="0,8"/>
+                            <Button Content="🔄 Reset Semua Data"
+                                    Command="{Binding ResetCommand}"
+                                    Style="{StaticResource BtnDanger}" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ─── PANEL KANAN (Map + Tabel) ──────────────────── -->
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>     <!-- Map -->
+                    <RowDefinition Height="8"/>     <!-- Splitter -->
+                    <RowDefinition Height="250"/>   <!-- Tabel -->
+                </Grid.RowDefinitions>
+
+                <!-- MAP -->
+                <Border Grid.Row="0" CornerRadius="10" ClipToBounds="True">
+                    <mapsui:MapControl x:Name="MapView"/>
+                </Border>
+
+                <!-- Splitter -->
+                <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch"
+                              Background="#444" Cursor="SizeNS"/>
+
+                <!-- TABEL HASIL -->
+                <Border Grid.Row="2" Style="{StaticResource CardPanel}" Margin="0,8,0,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="📋 TABEL HASIL PENGECEKAN"
+                                   Style="{StaticResource LabelHeader}" Margin="0,0,0,8"/>
+
+                        <DataGrid Grid.Row="1" ItemsSource="{Binding HasilList}"
+                                  AutoGenerateColumns="False" IsReadOnly="True"
+                                  SelectionMode="Single" EnableRowVirtualization="True"
+                                  VirtualizingPanel.IsVirtualizing="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Entity A" Binding="{Binding EntityAName}" Width="120"/>
+                                <DataGridTextColumn Header="Lat A" Binding="{Binding EntityALat, StringFormat={}{0:F6}}" Width="110"/>
+                                <DataGridTextColumn Header="Lon A" Binding="{Binding EntityALon, StringFormat={}{0:F6}}" Width="110"/>
+                                <DataGridTextColumn Header="Entity B" Binding="{Binding EntityBName}" Width="120"/>
+                                <DataGridTextColumn Header="Lat B" Binding="{Binding EntityBLat, StringFormat={}{0:F6}}" Width="110"/>
+                                <DataGridTextColumn Header="Lon B" Binding="{Binding EntityBLon, StringFormat={}{0:F6}}" Width="110"/>
+                                <DataGridTextColumn Header="Jarak (m)" Binding="{Binding JarakFormatted}" Width="90"/>
+                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90"/>
+                            </DataGrid.Columns>
+
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding DalamRadius}" Value="True">
+                                            <Setter Property="Background" Value="#1A3D2E"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding DalamRadius}" Value="False">
+                                            <Setter Property="Background" Value="#3D1A1A"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- ═══ STATUS BAR ══════════════════════════════════════════ -->
+        <Border Grid.Row="2" Background="#16213E" Padding="16,0">
+            <TextBlock Text="{Binding StatusBar}" Foreground="#A0AEC0"
+                       FontSize="12" VerticalAlignment="Center"/>
+        </Border>
+    </Grid>
+</Window>
